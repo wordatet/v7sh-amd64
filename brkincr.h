@@ -1,0 +1,2 @@
+#define BRKINCR 010000
+#define BRKMAX 040000

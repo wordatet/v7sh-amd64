@@ -1,0 +1,21 @@
+# v7sh-amd64: Licensing Notice
+
+This project is a port of the original UNIX 7th Edition (V7) Bourne shell to x86_64 Linux.
+
+## Original Code
+The original source code of the V7 shell is the work of S. R. Bourne at Bell Telephone Laboratories. 
+It was released by Caldera International, Inc. in 2002 under the Caldera Ancient Unix License (a permissive BSD-style license).
+
+Original Copyright: 
+Copyright (C) 2001-2002 Caldera International Inc. All rights reserved.
+Copyright (c) Bell Telephone Laboratories / S. R. Bourne.
+
+## x64 Port Modifications
+The modifications and porting work to enable this shell to run on modern 64-bit Linux environments (including malloc-based memory management, stack refactoring, and 64-bit pointer fixes) were performed with the assistance of Gemini and Claude. These changes are licensed under the GNU General Public License version 2.
+
+Port License: 
+GNU General Public License version 2 (GPL-v2) or later.
+See the [LICENSE](file:///home/mario/git/v7sh/LICENSE) file for the full text of the GPL-v2.
+
+## Combined Work
+The combined work is distributed under the terms of the GPL-v2, which is compatible with the permissive terms of the original Caldera/BSD license. All original attribution and copyright notices are preserved in the source files.
