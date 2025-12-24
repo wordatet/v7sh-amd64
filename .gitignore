@@ -11,3 +11,8 @@ v7sh
 *.swp
 *.tmp
 test_redirection.txt
+test.out
+
+# Logs and Stress tests
+valgrind_v7*.log
+stress_output.log

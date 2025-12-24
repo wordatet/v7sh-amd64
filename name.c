@@ -306,6 +306,33 @@ LOCAL VOID	namwalk(np)
 	FI
 }
 
+LOCAL VOID	freenam_tree(np)
+	REG NAMPTR	np;
+{
+	IF np
+	THEN	freenam_tree(np->namlft);
+		freenam_tree(np->namrgt);
+		shfree((BLKPTR) np->namval);
+		shfree((BLKPTR) np->namenv);
+		IF !eq(np->namid, (ps1name)) ANDF !eq(np->namid, (ps2name)) ANDF
+		   !eq(np->namid, (pathname)) ANDF !eq(np->namid, (homename)) ANDF
+		   !eq(np->namid, (mailname)) ANDF !eq(np->namid, (ifsname)) ANDF
+		   !eq(np->namid, (fngname))
+		THEN	shfree((BLKPTR) np->namid);
+		FI
+		/* Only free node if it's not one of the pre-allocated ones in name.c */
+		IF np < &ps2nod ORF np > &mailnod
+		THEN	shfree((BLKPTR) np);
+		FI
+	FI
+}
+
+VOID	freenames()
+{
+	freenam_tree(namep);
+	namep = NIL;
+}
+
 VOID	printnam(n)
 	NAMPTR		n;
 {

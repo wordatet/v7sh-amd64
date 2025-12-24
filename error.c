@@ -74,12 +74,22 @@ VOID	exitsh(xno)
 VOID	done()
 {
 	REG STRING	t;
+	REG INT		i;
 
 	IF (t=trapcom[0])!=NIL			/* GCC */
 	THEN	trapcom[0]=0; /*should free but not long */
 		execexp(t,0);
 	FI
+	FOR i=0; i<MAXTRAP; i++
+	DO shfree((BLKPTR) trapcom[i]);
+	OD
+	shfree((BLKPTR) dolladr);
+	shfree((BLKPTR) pidadr);
+	shfree((BLKPTR) exitadr);
+	shfree((BLKPTR) pcsadr);
+	
 	rmtemp(0);
+	freenames();
 	exit(exitval);
 	/*NOTREACHED*/
 }

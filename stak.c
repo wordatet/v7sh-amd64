@@ -10,6 +10,11 @@
 #include	"defs.h"
 #include	<stdlib.h>
 
+#include	<sys/mman.h>
+
+#define STAK_BASE_ADDR (void*)0x700000000000ULL
+#define STAK_MAX_SIZE (8 * 1024 * 1024)
+
 BLKPTR		stakbsy;
 STKPTR		stakbas;
 STKPTR		brkend;
@@ -17,38 +22,26 @@ STKPTR		stakbot;
 STKPTR		staktop;
 
 LOCAL STKPTR	stak_buffer;
-LOCAL POS	stak_size;
-
-#define INITIAL_STAK_SIZE (1024 * 1024)
-
-/* ========	storage allocation	======== */
-
-LOCAL VOID	stak_grow(needed)
-	POS	needed;
-{
-	REG POS	off_bas = stakbas - stak_buffer;
-	REG POS	off_bot = stakbot - stak_buffer;
-	REG POS	off_top = staktop - stak_buffer;
-	stak_size += max(needed + BRKINCR, stak_size);
-	stak_buffer = (STKPTR) realloc(stak_buffer, stak_size);
-	IF stak_buffer == NIL THEN error(nospace) FI
-	stakbas = stak_buffer + off_bas;
-	stakbot = stak_buffer + off_bot;
-	staktop = stak_buffer + off_top;
-	brkend = stak_buffer + stak_size;
-}
 
 STKPTR	getstak(asize)
 	POS		asize;
 {
 	REG POS		size=round(asize,BYTESPERWORD);
 	if (stak_buffer == NIL) {
-		stak_size = INITIAL_STAK_SIZE;
-		stak_buffer = malloc(stak_size);
+		stak_buffer = (STKPTR) mmap(STAK_BASE_ADDR, STAK_MAX_SIZE, 
+		                           PROT_READ|PROT_WRITE, 
+		                           MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
+		if (stak_buffer == MAP_FAILED) {
+			/* Fallback to non-fixed if fixed fails */
+			stak_buffer = (STKPTR) mmap(NULL, STAK_MAX_SIZE, 
+			                           PROT_READ|PROT_WRITE, 
+			                           MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+		}
+		if (stak_buffer == MAP_FAILED) error(nospace);
 		stakbas = stakbot = staktop = stak_buffer;
-		brkend = stak_buffer + stak_size;
+		brkend = stak_buffer + STAK_MAX_SIZE;
 	}
-	WHILE stakbot + size > brkend DO stak_grow(size) OD
+	if (stakbot + size > brkend) error(nospace);
 	{ REG STKPTR oldstak = stakbot;
 	  staktop = stakbot += size;
 	  return(oldstak);
@@ -58,12 +51,8 @@ STKPTR	getstak(asize)
 STKPTR	locstak()
 {
 	if (stak_buffer == NIL) {
-		stak_size = INITIAL_STAK_SIZE;
-		stak_buffer = malloc(stak_size);
-		stakbas = stakbot = staktop = stak_buffer;
-		brkend = stak_buffer + stak_size;
+		getstak(BRKINCR);
 	}
-	IF stakbot + BRKINCR >= brkend THEN stak_grow((POS)BRKINCR) FI
 	return(stakbot);
 }
 
