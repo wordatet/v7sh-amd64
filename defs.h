@@ -10,6 +10,7 @@
  * under the terms of the GNU General Public License as published by the 
  * Free Software Foundation; either version 2 of the License.
  */
+#include <compat.h>
 
 #include	<sys/types.h>
 #include	<sys/stat.h>
@@ -255,7 +256,7 @@ PROC INT	nextc(INT);
 PROC INT	readc(VOID);
 /* xec.c */
 PROC INT	execute(TREPTR, INT, INT *, INT *);
-PROC VOID	execexp(STRING, UFD);
+PROC VOID	execexp(STRING, void *);
 
 #define attrib(n,f)	(n->namflg |= f)
 #define round(a,b)	(((intptr_t)((ADR(a)+b)-1))&~((intptr_t)(b)-1))

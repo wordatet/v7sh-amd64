@@ -31,6 +31,7 @@ INT	execute(argt, execflg, pf1, pf2)
 	INT		execflg;
 	INT		*pf1, *pf2;
 {
+	STRING s = (STRING)s; /* Dummy to suppress unused if needed, but actually s is s */
 	/* `stakbot' is preserved by this routine */
 	REG TREPTR	t;
 	STKPTR		sav=savstak();
@@ -88,7 +89,7 @@ INT	execute(argt, execflg, pf1, pf2)
 						IF (f=pathopen(getpath(a1), a1)) < 0
 						THEN failed(a1,notfound);
 							/*NOTREACHED*/
-						ELSE execexp(0,f);
+						ELSE execexp(0,(void *)(intptr_t)f);
 						FI
 					FI
 					break;
@@ -271,7 +272,7 @@ INT	execute(argt, execflg, pf1, pf2)
 	
 				case SYSEVAL:
 					IF a1
-					THEN	execexp(a1,(UFD) &com[2]);
+					THEN	execexp(a1,(void *) &com[2]);
 					FI
 					break;
 #if defined(ULTRIX)
@@ -651,14 +652,14 @@ INT	execute(argt, execflg, pf1, pf2)
 
 VOID	execexp(s,f)
 	STRING		s;
-	UFD		f;
+	void*		f;
 {
 	FILEBLK		fb;
 	push(&fb);
 	IF s
 	THEN	estabf(s); fb.feval=(STRING *)f;
-	ELIF f>=0
-	THEN	initf(f);
+	ELIF (intptr_t)f>=0
+	THEN	initf((intptr_t)f);
 	FI
 	execute(cmd(NL, NLFLG|MTFLG),0,0,0);
 	pop();

@@ -1,9 +1,9 @@
-# Makefile for v7sh-amd64
-# Compatible with both GNU Make and bmake (BSD)
+# Makefile for v7sh-amd64 (Linux Hybrid Port)
+# Supports GCC for stability and PCC for historical auditing.
 
-CC = gcc
-CFLAGS = -g -Wall -std=gnu89 -fcommon -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE -I. -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-type
-LDFLAGS = 
+CC      ?= gcc
+CFLAGS  += -g -O0 -D_GNU_SOURCE -I. -I./include -fcommon -fno-stack-protector -fno-builtin-malloc
+LDFLAGS += -g
 
 SRCS = args.c blok.c builtin.c cmd.c ctype.c error.c expand.c \
        fault.c io.c macro.c main.c msg.c name.c print.c service.c \
@@ -12,13 +12,23 @@ OBJS = $(SRCS:.c=.o)
 
 PROG = v7sh
 
-.SUFFIXES: .c .o
+.PHONY: all clean vintage paranoid
 
+# Default: GCC build
 all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS)
 
+# Vintage: PCC build
+vintage: clean
+	$(MAKE) CC=pcc CFLAGS="-g -O0 -I. -I./include"
+
+# Verification: Run the Super Paranoid suite
+paranoid: clean $(PROG)
+	./super_paranoid_v7.sh
+
+.SUFFIXES: .c .o
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
